@@ -41,12 +41,16 @@ var Mosaic = function(width) {
 }
 
 Mosaic.prototype.append = function(w, h) {
+
     var obj = this.find(w, h);
     obj.width = w;
     obj.height = h;
+
     this.occupy(obj);
-    // console.log('appended', obj);
-    // console.log('holes', JSON.stringify(this.holes))
+
+    obj.index = this.tiles.length;
+    this.tiles.push(obj)
+
     return obj;
 }
 
@@ -116,6 +120,66 @@ Mosaic.prototype.occupy = function(obj) {
 }
 
 
+var dragee
+var mousedown_e
+var tiles_without_dragee;
+var N;
+
+$(document).on('mousedown', '.tile', function(e) {
+
+    mousedown_e = e;
+    e.preventDefault();
+    var tile = $(this).data('mosaic_tile');
+    console.log('mousedown', tile, e);
+    $(window).on('mouseup', mouseUp);
+    $(window).on('mousemove', mouseMove);
+
+    dragee = $(this);
+    $(this).hide();
+
+    tiles_without_dragee = M.tiles.slice(0, tile.index).concat(M.tiles.slice(tile.index + 1));
+    resetTiles(tiles_without_dragee);
+
+})
+
+var resetTiles = function(tiles) {
+    N = new Mosaic(M.width);
+    for (var i = 0; i < tiles.length; i++) {
+        var old_tile = tiles[i];
+        var new_tile = N.append(old_tile.width, old_tile.height);
+        old_tile.$node.css({
+            left: new_tile.col * (tile_size + padding),
+            top: new_tile.row * (tile_size + padding)
+        })
+    }
+}
+
+var mouseMove = function(e) {
+
+    var origin = $('#container').offset();
+    var x = e.clientX - origin.left;
+    var y = e.clientY - origin.top;
+
+    var row = Math.floor(y / (tile_size + padding));
+    var col = Math.floor(x / (tile_size + padding));
+
+    console.log('mousemove', row, col);
+    e.preventDefault();
+
+}
+
+var mouseUp = function(e) {
+    e.preventDefault();
+    console.log('mouseup');
+    $(window).off('mouseup', mouseUp);
+    $(window).off('mousemove', mouseMove);
+
+    dragee.show();
+    resetTiles(M.tiles);
+}
+
+
+
 
 function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
@@ -140,6 +204,7 @@ for (i = 0; i < 100; i++) {
     //console.timeEnd('Mosaic.append');
 
     var $tile = $('<div class="tile" />')
+        .data('mosaic_tile', obj)
         .text(i + ": " + width + "x" + height)
         .css({
             width: width * tile_size + (width - 1) * padding,
@@ -149,6 +214,8 @@ for (i = 0; i < 100; i++) {
             backgroundColor: getRandomColor()
         })
         .appendTo('#container')
+
+    obj.$node = $tile;
 
 
 }
