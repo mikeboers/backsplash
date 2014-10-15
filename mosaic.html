@@ -52,11 +52,9 @@ Mosaic.prototype.append = function(w, h) {
 
 Mosaic.prototype.find = function(w, h) {
 
-    for (var r in this.holes) {
-        r = parseInt(r, 10);
-        for (var c in this.holes[r]) {
-            c = parseInt(c, 10);
-            if (this.holes[r][c]) {
+    for (var r = 0; r < this.holes.length; r++) {
+        for (var c = 0; c < this.width; c++) {
+            if (this.holes[r] && this.holes[r][c]) {
                 if (this._fits(w, h, r, c)) {
                     return {row: r, col: c};
                 }
@@ -73,7 +71,7 @@ Mosaic.prototype._fits = function(w, h, r, c) {
     for (var R = r; R < r + h; R++) {
         for (var C = c; C < c + w; C++) {
             // console.log('fits', {width: w, height: h, row:r, col:c, R:R, C:C, hole:this.holes[R] && !this.holes[R][C]})
-            if (this.holes[R] && !this.holes[R][C]) {
+            if (R < this.holes.length && (!this.holes[R] || !this.holes[R][C])) {
                 return false;
             }
         }
@@ -83,20 +81,38 @@ Mosaic.prototype._fits = function(w, h, r, c) {
 
 Mosaic.prototype.occupy = function(obj) {
 
-    for (var r = obj.row; r < obj.row + obj.height; r++) {
+    while (this.holes.length < obj.row + obj.height + 2) {
+        var row = [];
+        for (var i = 0; i < this.width; i++) {
+            row.push(true);
+        }
+        this.holes.push(row);
+    }
 
+    for (var r = obj.row; r < obj.row + obj.height; r++) {
+        
         if (!this.holes[r]) {
-            this.holes[r] = {};
-            for (var i = 0; i < this.width; i++) {
-                this.holes[r][i] = true;
-            }
+            throw "invalid row " + r;
         }
 
         for (var c = obj.col; c < obj.col + obj.width; c++) {
             this.holes[r][c] = false;
         }
 
+        var empty = true;
+        for (var c = 0; c < this.width; c++) {
+            if (this.holes[r][c]) {
+                empty = false;
+                break;
+            }
+        }
+        if (empty) {
+            this.holes[r] = null;
+        }
+
     }
+
+
 }
 
 
@@ -119,7 +135,9 @@ for (i = 0; i < 100; i++) {
     var width = 1 + Math.floor(Math.random() * 3);
     var height = 1 + Math.floor(Math.random() * 3);
 
+    //console.time('Mosaic.append');
     var obj = M.append(width, height);
+    //console.timeEnd('Mosaic.append');
 
     var $tile = $('<div class="tile" />')
         .text(i + ": " + width + "x" + height)
