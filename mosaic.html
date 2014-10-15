@@ -1,0 +1,143 @@
+<!doctype html>
+<head>
+    <style>
+
+        #container {
+            width: 600px;
+            min-height: 100%;
+            margin: 0 auto;
+            position: relative;
+            background-color: #888;
+        }
+
+        .tile {
+            margin: 0 5px 5px 0;
+            border: 1px solid #000;
+            padding: 10px;
+            border-radius: 5px;
+            float: left;
+            box-sizing: border-box;
+            position: absolute;
+        }
+
+    </style>
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script>jQuery(function ($) {
+
+
+var flat = function(x) {
+    JSON.parse(JSON.stringify(x));
+}
+
+
+var Mosaic = function(width) {
+
+    this.width = width;
+    this.height = 0;
+    this.tiles = []
+    this.holes = []
+}
+
+Mosaic.prototype.append = function(w, h) {
+    var obj = this.find(w, h);
+    obj.width = w;
+    obj.height = h;
+    this.occupy(obj);
+    // console.log('appended', obj);
+    // console.log('holes', JSON.stringify(this.holes))
+    return obj;
+}
+
+Mosaic.prototype.find = function(w, h) {
+
+    for (var r in this.holes) {
+        r = parseInt(r, 10);
+        for (var c in this.holes[r]) {
+            c = parseInt(c, 10);
+            if (this.holes[r][c]) {
+                if (this._fits(w, h, r, c)) {
+                    return {row: r, col: c};
+                }
+            }
+        }
+    }
+
+    return {row: this.holes.length, col: 0};
+}
+
+
+Mosaic.prototype._fits = function(w, h, r, c) {
+    // console.log('fits', {width: w, height: h, row: r, col: c});
+    for (var R = r; R < r + h; R++) {
+        for (var C = c; C < c + w; C++) {
+            // console.log('fits', {width: w, height: h, row:r, col:c, R:R, C:C, hole:this.holes[R] && !this.holes[R][C]})
+            if (this.holes[R] && !this.holes[R][C]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+Mosaic.prototype.occupy = function(obj) {
+
+    for (var r = obj.row; r < obj.row + obj.height; r++) {
+
+        if (!this.holes[r]) {
+            this.holes[r] = {};
+            for (var i = 0; i < this.width; i++) {
+                this.holes[r][i] = true;
+            }
+        }
+
+        for (var c = obj.col; c < obj.col + obj.width; c++) {
+            this.holes[r][c] = false;
+        }
+
+    }
+}
+
+
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+var tile_size = 50;
+var padding = 5;
+
+var M = new Mosaic(10);
+
+for (i = 0; i < 100; i++) {
+    var width = 1 + Math.floor(Math.random() * 3);
+    var height = 1 + Math.floor(Math.random() * 3);
+
+    var obj = M.append(width, height);
+
+    var $tile = $('<div class="tile" />')
+        .text(i + ": " + width + "x" + height)
+        .css({
+            width: width * tile_size + (width - 1) * padding,
+            height: height * tile_size + (height - 1) * padding,
+            left: obj.col * (tile_size + padding),
+            top: obj.row * (tile_size + padding),
+            backgroundColor: getRandomColor()
+        })
+        .appendTo('#container')
+
+
+}
+
+
+    })</script>
+
+<body>
+
+    <div id="container"></div>
