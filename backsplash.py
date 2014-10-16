@@ -38,7 +38,7 @@ class Layout(object):
         }
 
     def add(self, tile=None, **kw):
-        tile = tile.copy() or Tile(**kw)
+        tile = tile.copy() if tile else Tile(**kw)
         if tile.row is None or tile.col is None:
             self._find_hole(tile)
         self._occupy(tile)
