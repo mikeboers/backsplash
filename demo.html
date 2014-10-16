@@ -42,63 +42,61 @@ var flat = function(x) {
 
 
 var dragee
-var mousedown_e
-var tiles_without_dragee;
-var N;
 
+var resetTile = function(M, old_tile, opts) {
+    var new_tile = M.add(old_tile, opts);
+    old_tile.$tile.css({
+        left: new_tile.col * (tile_size + padding),
+        top: new_tile.row * (tile_size + padding)
+    });
+}
 
 var resetTiles = function() {
 
-    var tiles = M.tiles;
-    N = new Mosaic(M.width);
+    var tiles = M.linearize();
+    console.log(tiles.length);
+    var N = new Mosaic(M.width);
 
     for (var i = 0; i < tiles.length; i++) {
-        var old_tile = tiles[i];
-        if (old_tile.locked) {
-            N.place(old_tile)
-            old_tile.$node.css({
-                left: old_tile.col * (tile_size + padding),
-                top: old_tile.row * (tile_size + padding)
-            })
+        if (tiles[i].locked) {
+            resetTile(N, tiles[i].locked)
+        }
+    }
+    for (var i = 0; i < tiles.length; i++) {
+        if (!tiles[i].locked) {
+            resetTile(N, tiles[i], {ignore_position: true})
         }
     }
 
-    for (var i = 0; i < tiles.length; i++) {
-        var old_tile = tiles[i];
-        if (!old_tile.locked) {
-            var new_tile = N.append(old_tile.width, old_tile.height);
-            old_tile.$node.css({
-                left: new_tile.col * (tile_size + padding),
-                top: new_tile.row * (tile_size + padding)
-            })
-        }
-    }
+    return N;
+
 
 }
 
 
 
 $(document).on('mousedown', '.tile', function(e) {
-
-    mousedown_e = e;
     e.preventDefault();
-    var tile = $(this).data('mosaic_tile');
 
-    tile.locked = true;
-    tile.$node.addClass('tile-locked');
+    var $tile = $(this);
+    var tile = $tile.data('mosaic_tile');
 
-    console.log('mousedown', tile, e);
+    $tile.addClass('tile-locked');
+    tile.locked = clone(tile)
+
     $(window).on('mouseup', mouseUp);
     $(window).on('mousemove', mouseMove);
 
-    dragee = $(this);
+    dragee = $tile;
 
-    // resetTiles();
+    resetTiles();
 
 })
 
 
 var mouseMove = function(e) {
+
+    e.preventDefault();
 
     var origin = $('#container').offset();
     var x = e.clientX - origin.left;
@@ -109,12 +107,8 @@ var mouseMove = function(e) {
 
     var tile = dragee.data('mosaic_tile');
     var changed = (tile.row != row || tile.col != col);
-    tile.row = row;
-    tile.col = col;
-
-
-    console.log('mousemove', row, col);
-    e.preventDefault();
+    tile.locked.row = row;
+    tile.locked.col = col;
 
     if (changed) {
         resetTiles();
@@ -125,7 +119,7 @@ var mouseMove = function(e) {
 
 var mouseUp = function(e) {
     e.preventDefault();
-    console.log('mouseup');
+
     $(window).off('mouseup', mouseUp);
     $(window).off('mousemove', mouseMove);
 
@@ -145,32 +139,30 @@ function getRandomColor() {
 }
 
 
-var tile_size = 50;
-var padding = 5;
+var tile_size = 100;
+var padding = 2;
 
-var M = new Mosaic(10);
+var M = new Mosaic(5);
 
 for (i = 0; i < 100; i++) {
-    var width = 1 + Math.floor(Math.random() * 3);
-    var height = 1 + Math.floor(Math.random() * 3);
+    var width = 1 + Math.floor(Math.random() * 2);
+    var height = 1 + Math.floor(Math.random() * 2);
 
-    //console.time('Mosaic.append');
-    var obj = M.append(width, height);
-    //console.timeEnd('Mosaic.append');
+    var tile = M.add({width: width, height: height});
 
     var $tile = $('<div class="tile" />')
-        .data('mosaic_tile', obj)
+        .data('mosaic_tile', tile)
         .text(i + ": " + width + "x" + height)
         .css({
             width: width * tile_size + (width - 1) * padding,
             height: height * tile_size + (height - 1) * padding,
-            left: obj.col * (tile_size + padding),
-            top: obj.row * (tile_size + padding),
+            left: tile.col * (tile_size + padding),
+            top: tile.row * (tile_size + padding),
             backgroundColor: getRandomColor()
         })
         .appendTo('#container')
 
-    obj.$node = $tile;
+    tile.$tile = $tile;
 
 
 }

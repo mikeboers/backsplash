@@ -8,6 +8,9 @@ class Tile(object):
         self.col = col
         self.__dict__.update(kw)
 
+    def copy(self):
+        return self.__class__(**self.__dict__)
+
 
 class Mosaic(object):
 
@@ -23,9 +26,9 @@ class Mosaic(object):
     @property
     def height(self):
         return len(self._holes)
-    
+
     def add(self, tile=None, **kw):
-        tile = tile or Tile(**kw)
+        tile = tile.copy() or Tile(**kw)
         if not (tile.row and tile.col):
             self._find_hole(tile)
         self._occupy(tile)

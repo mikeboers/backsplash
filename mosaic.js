@@ -1,5 +1,22 @@
 
 
+function clone(obj) {
+
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+
+    var temp = {}; // obj.constructor();
+
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key)) {
+            temp[key] = obj[key];
+        }
+    }
+    return temp;
+
+}
+
+
 var Mosaic = function(width) {
     this.width = width;
     this.tiles = []
@@ -17,7 +34,7 @@ Mosaic.prototype.linearize = function() {
             if (!tile) {
                 continue;
             }
-            var key = tile.row + ',' + tile.col;
+            var key = this.width * tile.row + tile.col;
             if (!seen[key]) {
                 res.push(tile);
                 seen[key] = true;
@@ -28,9 +45,16 @@ Mosaic.prototype.linearize = function() {
 }
 
 
-Mosaic.prototype.add = function(tile) {
+Mosaic.prototype.add = function(tile, opts) {
 
-    if (!(tile.row && tile.col)) {
+    tile = clone(tile);
+    opts = opts ? opts : {};
+
+    if (opts.ignore_position) {
+        tile.row = tile.col = null;
+    }
+
+    if (!(typeof(tile.row) === "number" && typeof(tile.col) === "number")) {
         this._find_hole(tile);
     }
     this.occupy(tile);
@@ -114,7 +138,7 @@ Mosaic.prototype.occupy = function(tile) {
 }
 
 
-if (module) {
+if (typeof window === 'undefined') {
     module.exports = {
         Mosaic: Mosaic
     }

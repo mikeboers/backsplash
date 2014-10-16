@@ -43,8 +43,8 @@ def format_labels_js(width, tiles):
 class TestCase(unittest.TestCase):
 
     def assertEqualLayout(self, width, tiles, manual=None):
-        js = format_labels_js(width, tiles)
-        py = format_labels_py(width, tiles)
+        py = format_labels_py(width, [t.copy() for t in tiles])
+        js = format_labels_js(width, [t.copy() for t in tiles])
         print py
         if manual:
             self.assertEqualLines(py, manual)
@@ -81,10 +81,11 @@ class TestMosaic(TestCase):
             Tile(2, 2, label='A'),
             Tile(1, 4, label='B'),
             Tile(3, 1, label='C'),
+            Tile(1, 1, label='D'),
         ], '''
-            order: ACB
+            order: ADCB
 
-            AA  C
+            AAD C
             AA  C
             BBBBC
 
