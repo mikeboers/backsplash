@@ -40,6 +40,13 @@ var Mosaic = function(width) {
     this.holes = []
 }
 
+
+Mosaic.prototype.place = function(obj) {
+    this.tiles.push(obj);
+    this.occupy(obj);
+}
+
+
 Mosaic.prototype.append = function(w, h) {
 
     var obj = this.find(w, h);
@@ -53,6 +60,7 @@ Mosaic.prototype.append = function(w, h) {
 
     return obj;
 }
+
 
 Mosaic.prototype.find = function(w, h) {
 
@@ -82,6 +90,7 @@ Mosaic.prototype._fits = function(w, h, r, c) {
     }
     return true;
 }
+
 
 Mosaic.prototype.occupy = function(obj) {
 
@@ -125,34 +134,54 @@ var mousedown_e
 var tiles_without_dragee;
 var N;
 
+
+var resetTiles = function() {
+
+    var tiles = M.tiles;
+    N = new Mosaic(M.width);
+
+    for (var i = 0; i < tiles.length; i++) {
+        var old_tile = tiles[i];
+        if (old_tile.locked) {
+            N.place(old_tile)
+            old_tile.$node.css({
+                left: old_tile.col * (tile_size + padding),
+                top: old_tile.row * (tile_size + padding)
+            })
+        }
+    }
+
+    for (var i = 0; i < tiles.length; i++) {
+        var old_tile = tiles[i];
+        if (!old_tile.locked) {
+            var new_tile = N.append(old_tile.width, old_tile.height);
+            old_tile.$node.css({
+                left: new_tile.col * (tile_size + padding),
+                top: new_tile.row * (tile_size + padding)
+            })
+        }
+    }
+
+}
+
+
+
 $(document).on('mousedown', '.tile', function(e) {
 
     mousedown_e = e;
     e.preventDefault();
     var tile = $(this).data('mosaic_tile');
+    tile.locked = true
     console.log('mousedown', tile, e);
     $(window).on('mouseup', mouseUp);
     $(window).on('mousemove', mouseMove);
 
     dragee = $(this);
-    $(this).hide();
 
-    tiles_without_dragee = M.tiles.slice(0, tile.index).concat(M.tiles.slice(tile.index + 1));
-    resetTiles(tiles_without_dragee);
+    // resetTiles();
 
 })
 
-var resetTiles = function(tiles) {
-    N = new Mosaic(M.width);
-    for (var i = 0; i < tiles.length; i++) {
-        var old_tile = tiles[i];
-        var new_tile = N.append(old_tile.width, old_tile.height);
-        old_tile.$node.css({
-            left: new_tile.col * (tile_size + padding),
-            top: new_tile.row * (tile_size + padding)
-        })
-    }
-}
 
 var mouseMove = function(e) {
 
@@ -163,10 +192,21 @@ var mouseMove = function(e) {
     var row = Math.floor(y / (tile_size + padding));
     var col = Math.floor(x / (tile_size + padding));
 
+    var tile = dragee.data('mosaic_tile');
+    var changed = (tile.row != row || tile.col != col);
+    tile.row = row;
+    tile.col = col;
+
+
     console.log('mousemove', row, col);
     e.preventDefault();
 
+    if (changed) {
+        resetTiles();
+    }
+
 }
+
 
 var mouseUp = function(e) {
     e.preventDefault();
@@ -174,8 +214,7 @@ var mouseUp = function(e) {
     $(window).off('mouseup', mouseUp);
     $(window).off('mousemove', mouseMove);
 
-    dragee.show();
-    resetTiles(M.tiles);
+    resetTiles();
 }
 
 
@@ -189,6 +228,7 @@ function getRandomColor() {
     }
     return color;
 }
+
 
 var tile_size = 50;
 var padding = 5;
