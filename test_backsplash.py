@@ -5,12 +5,12 @@ import subprocess
 import unittest
 from textwrap import dedent
 
-from backsplash import Mosaic, Tile
+from backsplash import Layout, Tile
 
 
 def format_labels_py(width, tiles):
 
-    m = Mosaic(width)
+    m = Layout(width)
     for t in tiles:
         m.add(t)
 
@@ -59,7 +59,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(a, b, *args) 
 
 
-class TestMosaic(TestCase):
+class TestLayout(TestCase):
 
     def test_basic_layouts(self):
         self.assertEqualLayout(5, [
@@ -93,7 +93,7 @@ class TestMosaic(TestCase):
         ''')
 
     def test_regression_1(self):
-        # This was actually an issue with the Mosaic constructor changing, but
+        # This was actually an issue with the Layout constructor changing, but
         # it is always helpful to have more tests.
         self.assertEqualLayout(6, [
             Tile(2, 2, label='0'),

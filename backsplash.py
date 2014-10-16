@@ -12,7 +12,7 @@ class Tile(object):
         return self.__class__(**self.__dict__)
 
 
-class Mosaic(object):
+class Layout(object):
 
     def __init__(self, width, tile_size=100, padding=0):
         self._width = width

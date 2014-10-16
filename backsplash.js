@@ -1,5 +1,7 @@
 
 
+var backsplash = (function(){
+
 function clone(obj) {
 
     if(obj == null || typeof(obj) != 'object')
@@ -17,7 +19,7 @@ function clone(obj) {
 }
 
 
-var Mosaic = function(opts) {
+var Layout = function(opts) {
 
     this.opts = clone(opts || {});
 
@@ -31,7 +33,7 @@ var Mosaic = function(opts) {
 }
 
 
-Mosaic.prototype.css = function(tile) {
+Layout.prototype.css = function(tile) {
     return {
         'top': tile.row * (this.tile_size + this.padding),
         'left': tile.col * (this.tile_size + this.padding),
@@ -41,7 +43,7 @@ Mosaic.prototype.css = function(tile) {
 }
 
 
-Mosaic.prototype.linearize = function() {
+Layout.prototype.linearize = function() {
     var res = []
     var seen = {}
     for (var row = 0; row < this.tiles.length; row++) {
@@ -61,7 +63,7 @@ Mosaic.prototype.linearize = function() {
 }
 
 
-Mosaic.prototype.add = function(tile, opts) {
+Layout.prototype.add = function(tile, opts) {
 
     tile = clone(tile);
     opts = opts ? opts : {};
@@ -79,7 +81,7 @@ Mosaic.prototype.add = function(tile, opts) {
 }
 
 
-Mosaic.prototype._find_hole = function(tile) {
+Layout.prototype._find_hole = function(tile) {
 
     for (var r = 0; r < this.holes.length; r++) {
         for (var c = 0; c < this.width; c++) {
@@ -100,7 +102,7 @@ Mosaic.prototype._find_hole = function(tile) {
 }
 
 
-Mosaic.prototype._fits_holes = function(tile, r, c) {
+Layout.prototype._fits_holes = function(tile, r, c) {
     for (var R = r; R < r + tile.height; R++) {
         for (var C = c; C < c + tile.width; C++) {
             if (R < this.holes.length && (!this.holes[R] || !this.holes[R][C])) {
@@ -112,7 +114,7 @@ Mosaic.prototype._fits_holes = function(tile, r, c) {
 }
 
 
-Mosaic.prototype.occupy = function(tile) {
+Layout.prototype.occupy = function(tile) {
 
     while (this.holes.length < tile.row + tile.height + 2) {
         var holes = [];
@@ -151,11 +153,18 @@ Mosaic.prototype.occupy = function(tile) {
     }
 
 
+
 }
+
+
+return {
+    Layout: Layout
+}
+
+})();
 
 
 if (typeof window === 'undefined') {
-    module.exports = {
-        Mosaic: Mosaic
-    }
+    module.exports = backsplash
 }
+

@@ -1,8 +1,8 @@
 
-Mosaic = require('./backsplash').Mosaic
+Layout = require('./backsplash').Layout
 
 
-m = new Mosaic({
+m = new Layout({
     width: parseInt(process.argv[2], 10),
 })
 
