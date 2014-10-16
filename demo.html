@@ -90,7 +90,11 @@ $(document).on('keydown', function(e) {
         case 40: // down
             e.preventDefault()
             for (var i = 0; i < selection.length; i++) {
-                selection[i].locked.row += e.keyCode == 40 ? 1 : -1;
+                if (e.metaKey) {
+                    selection[i].locked.height += e.keyCode == 40 ? 1 : -1;
+                } else {
+                    selection[i].locked.row += e.keyCode == 40 ? 1 : -1;
+                }
             }
             resetTiles();
             break;
@@ -99,13 +103,16 @@ $(document).on('keydown', function(e) {
         case 39: // right
             e.preventDefault()
             for (var i = 0; i < selection.length; i++) {
-                selection[i].locked.col += e.keyCode == 39 ? 1 : -1;
-            }
+                if (e.metaKey) {
+                    selection[i].locked.width += e.keyCode == 39 ? 1 : -1;
+                } else {
+                    selection[i].locked.col += e.keyCode == 39 ? 1 : -1;
+                }            }
             resetTiles();
             break;
 
         default:
-            console.log('unknown key', e.keyCode)
+            console.log('unknown key', e.keyCode, e)
     }
 
 })
