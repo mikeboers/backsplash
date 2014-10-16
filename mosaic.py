@@ -1,54 +1,75 @@
 
 class Tile(object):
     
-    def __init__(self, width, height):
+    def __init__(self, height, width, row=None, col=None, **kw):
         self.width = width
         self.height = height
-        self.row = None
-        self.col = None
+        self.row = row
+        self.col = col
+        self.__dict__.update(kw)
 
 
 class Mosaic(object):
 
     def __init__(self, width):
-        self.width = width
-        self.tiles = []
-        self.holes = []
+        self._width = width
+        self._holes = []
+        self._tiles = {}
 
-    def append(self, w, h):
-        tile = Tile(w, h)
-        self.find_hole(tile)
-        self.occupy(tile)
-        self.tiles.append(tile)
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return len(self._holes)
+    
+    def add(self, tile=None, **kw):
+        tile = tile or Tile(**kw)
+        if not (tile.row and tile.col):
+            self._find_hole(tile)
+        self._occupy(tile)
         return tile
 
-    def find_hole(self, tile):
-        for r in xrange(len(self.holes)):
-            for c in xrange(self.width):
-                if self.holes[r] and self.holes[r][c]:
-                    if self.fits_holes(tile, r, c):
+    def linearize(self):
+        seen = set()
+        for r in xrange(len(self._holes)):
+            for c in xrange(self._width):
+                t = self._tiles.get((r, c))
+                if not t:
+                    continue
+                if t not in seen:
+                    yield t
+                    seen.add(t)
+
+    def _find_hole(self, tile):
+        for r in xrange(len(self._holes)):
+            for c in xrange(self._width):
+                if self._holes[r] and self._holes[r][c]:
+                    if self._fits_holes(tile, r, c):
                         tile.row = r
                         tile.col = c
                         return tile
-        tile.row = len(self.holes)
+        tile.row = len(self._holes)
         tile.col = 0
         return tile
 
-    def fits_holes(self, tile, r, c):
+    def _fits_holes(self, tile, r, c):
         for R in xrange(r, r + tile.height):
             for C in xrange(c, c + tile.width):
-                if C >= self.width:
+                if C >= self._width:
                     return False
-                if R < len(self.holes) and (not self.holes[R] or not self.holes[R][C]):
+                if R < len(self._holes) and (not self._holes[R] or not self._holes[R][C]):
                     return False
         return True
 
-    def occupy(self, tile):
-        while len(self.holes) < tile.row + tile.height:
-            self.holes.append([True] * self.width)
+    def _occupy(self, tile):
+        while len(self._holes) < tile.row + tile.height:
+            self._holes.append([True] * self._width)
         for r in xrange(tile.row, tile.row + tile.height):
             for c in xrange(tile.col, tile.col + tile.width):
-                self.holes[r][c] = False
-            if not any(self.holes[r]):
-                self.holes[r] = False
+                self._holes[r][c] = False
+                self._tiles[(r,c)] = tile
+            if not any(self._holes[r]):
+                self._holes[r] = False
 

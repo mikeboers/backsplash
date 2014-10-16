@@ -1,54 +1,68 @@
 
+
 var Mosaic = function(width) {
     this.width = width;
-    this.height = 0;
     this.tiles = []
     this.holes = []
+
 }
 
 
-Mosaic.prototype.place = function(obj) {
-    this.tiles.push(obj);
-    this.occupy(obj);
+Mosaic.prototype.linearize = function() {
+    var res = []
+    var seen = {}
+    for (var row = 0; row < this.tiles.length; row++) {
+        for (var col = 0; col < this.width; col++) {
+            var tile = this.tiles[row][col];
+            if (!tile) {
+                continue;
+            }
+            var key = tile.row + ',' + tile.col;
+            if (!seen[key]) {
+                res.push(tile);
+                seen[key] = true;
+            }
+        }
+    }
+    return res;
 }
 
 
-Mosaic.prototype.append = function(w, h) {
+Mosaic.prototype.add = function(tile) {
 
-    var obj = this.find(w, h);
-    obj.width = w;
-    obj.height = h;
+    if (!(tile.row && tile.col)) {
+        this._find_hole(tile);
+    }
+    this.occupy(tile);
+    return tile;
 
-    this.occupy(obj);
-
-    obj.index = this.tiles.length;
-    this.tiles.push(obj)
-
-    return obj;
 }
 
 
-Mosaic.prototype.find = function(w, h) {
+Mosaic.prototype._find_hole = function(tile) {
 
     for (var r = 0; r < this.holes.length; r++) {
         for (var c = 0; c < this.width; c++) {
             if (this.holes[r] && this.holes[r][c]) {
-                if (this._fits(w, h, r, c)) {
-                    return {row: r, col: c};
+                if (this._fits_holes(tile, r, c)) {
+                    tile.row = r;
+                    tile.col = c;
+                    return tile;
                 }
             }
         }
     }
 
-    return {row: this.holes.length, col: 0};
+    tile.row = this.holes.length;
+    tile.col = 0;
+    return tile;
+
 }
 
 
-Mosaic.prototype._fits = function(w, h, r, c) {
-    // console.log('fits', {width: w, height: h, row: r, col: c});
-    for (var R = r; R < r + h; R++) {
-        for (var C = c; C < c + w; C++) {
-            // console.log('fits', {width: w, height: h, row:r, col:c, R:R, C:C, hole:this.holes[R] && !this.holes[R][C]})
+Mosaic.prototype._fits_holes = function(tile, r, c) {
+    for (var R = r; R < r + tile.height; R++) {
+        for (var C = c; C < c + tile.width; C++) {
             if (R < this.holes.length && (!this.holes[R] || !this.holes[R][C])) {
                 return false;
             }
@@ -58,26 +72,31 @@ Mosaic.prototype._fits = function(w, h, r, c) {
 }
 
 
-Mosaic.prototype.occupy = function(obj) {
+Mosaic.prototype.occupy = function(tile) {
 
-    while (this.holes.length < obj.row + obj.height + 2) {
-        var row = [];
+    while (this.holes.length < tile.row + tile.height + 2) {
+        var holes = [];
+        var tiles = [];
         for (var i = 0; i < this.width; i++) {
-            row.push(true);
+            holes.push(true);
+            tiles.push(null);
         }
-        this.holes.push(row);
+        this.holes.push(holes);
+        this.tiles.push(tiles)
     }
 
-    for (var r = obj.row; r < obj.row + obj.height; r++) {
+    for (var r = tile.row; r < tile.row + tile.height; r++) {
         
-        if (!this.holes[r]) {
+        if (!this.holes[r] || !this.tiles[r]) {
             throw "invalid row " + r;
         }
 
-        for (var c = obj.col; c < obj.col + obj.width; c++) {
+        for (var c = tile.col; c < tile.col + tile.width; c++) {
             this.holes[r][c] = false;
+            this.tiles[r][c] = tile;
         }
 
+        // Here is the only real different between them.
         var empty = true;
         for (var c = 0; c < this.width; c++) {
             if (this.holes[r][c]) {
