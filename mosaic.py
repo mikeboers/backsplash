@@ -14,10 +14,12 @@ class Tile(object):
 
 class Mosaic(object):
 
-    def __init__(self, width):
+    def __init__(self, width, tile_size=100, padding=0):
         self._width = width
         self._holes = []
         self._tiles = {}
+        self._tile_size = tile_size
+        self._padding = padding
 
     @property
     def width(self):
@@ -26,6 +28,14 @@ class Mosaic(object):
     @property
     def height(self):
         return len(self._holes)
+
+    def css(self, tile):
+        return {
+            'top': tile.row * (self._tile_size + self._padding),
+            'left': tile.col * (self._tile_size + self._padding),
+            'height': tile.height * (self._tile_size + self._padding) - self._padding,
+            'width': tile.width * (self._tile_size + self._padding) - self._padding,
+        }
 
     def add(self, tile=None, **kw):
         tile = tile.copy() or Tile(**kw)

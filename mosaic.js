@@ -17,11 +17,27 @@ function clone(obj) {
 }
 
 
-var Mosaic = function(width) {
-    this.width = width;
-    this.tiles = []
-    this.holes = []
+var Mosaic = function(opts) {
 
+    this.opts = clone(opts || {});
+
+    this.width = this.opts.width || 5;
+    this.tile_size = this.opts.tile_size || 100;
+    this.padding = this.opts.padding || 0;
+
+    this.tiles = [];
+    this.holes = [];
+
+}
+
+
+Mosaic.prototype.css = function(tile) {
+    return {
+        'top': tile.row * (this.tile_size + this.padding),
+        'left': tile.col * (this.tile_size + this.padding),
+        'height': tile.height * (this.tile_size + this.padding) - this.padding,
+        'width': tile.width * (this.tile_size + this.padding) - this.padding,
+    }
 }
 
 
