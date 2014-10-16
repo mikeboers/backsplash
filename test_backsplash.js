@@ -1,14 +1,16 @@
 
-Mosaic = require('./mosaic').Mosaic
+Mosaic = require('./backsplash').Mosaic
 
 
-m = new Mosaic(parseInt(process.argv[2], 10))
+m = new Mosaic({
+    width: parseInt(process.argv[2], 10),
+})
 
 for (i = 3; i < process.argv.length; i += 5) {
 
     label = process.argv[i]
-    row = parseInt(process.argv[i + 1], 10)
-    col = parseInt(process.argv[i + 2], 10)
+    row = parseInt(process.argv[i + 1], 10) || null
+    col = parseInt(process.argv[i + 2], 10) || null
     height = parseInt(process.argv[i + 3], 10)
     width = parseInt(process.argv[i + 4], 10)
 

@@ -39,7 +39,7 @@ class Mosaic(object):
 
     def add(self, tile=None, **kw):
         tile = tile.copy() or Tile(**kw)
-        if not (tile.row and tile.col):
+        if tile.row is None or tile.col is None:
             self._find_hole(tile)
         self._occupy(tile)
         return tile

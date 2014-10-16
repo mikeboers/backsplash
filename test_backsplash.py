@@ -5,7 +5,7 @@ import subprocess
 import unittest
 from textwrap import dedent
 
-from mosaic import Mosaic, Tile
+from backsplash import Mosaic, Tile
 
 
 def format_labels_py(width, tiles):
@@ -30,7 +30,7 @@ def format_labels_py(width, tiles):
 
 def format_labels_js(width, tiles):
 
-    cmd = ['node', 'test_mosaic.js', width]
+    cmd = ['node', 'test_backsplash.js', width]
     for tile in tiles:
         cmd.extend((tile.label, tile.row or 0, tile.col or 0, tile.height, tile.width))
     cmd = map(str, cmd)
@@ -46,6 +46,7 @@ class TestCase(unittest.TestCase):
         py = format_labels_py(width, [t.copy() for t in tiles])
         js = format_labels_js(width, [t.copy() for t in tiles])
         print py
+        print
         if manual:
             self.assertEqualLines(py, manual)
         self.assertEqualLines(py, js)
@@ -89,6 +90,30 @@ class TestMosaic(TestCase):
             AA  C
             BBBBC
 
+        ''')
+
+    def test_regression_1(self):
+        # This was actually an issue with the Mosaic constructor changing, but
+        # it is always helpful to have more tests.
+        self.assertEqualLayout(6, [
+            Tile(2, 2, label='0'),
+            Tile(1, 2, label='1'),
+            Tile(1, 1, label='2'),
+            Tile(1, 1, label='3'),
+            Tile(1, 2, label='4'),
+            Tile(2, 1, label='5'),
+            Tile(1, 2, label='6'),
+            Tile(2, 1, label='7'),
+            Tile(1, 1, label='8'),
+            Tile(2, 2, label='9'),
+        ], '''
+            order: 0123457689
+
+            001123
+            004457
+            668 57
+            99    
+            99
         ''')
 
     def test_random_layouts(self):
