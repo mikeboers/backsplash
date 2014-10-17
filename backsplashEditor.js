@@ -18,7 +18,7 @@ var Editor = function(elem, opts) {
 
     this.selection = []
 
-    this.$elem.on('keydown.backsplash', $.proxy(this, 'onKeydown'));
+    $(window).on('keydown.backsplash', $.proxy(this, 'onKeydown'));
     this.$elem.on('mousedown.backsplash', '.backsplash-tile', $.proxy(this, 'onMousedown'));
     this.$elem.on('click.backsplash', '.backsplash-tile', function(e) {
         e.preventDefault();
@@ -46,9 +46,9 @@ var Editor = function(elem, opts) {
 
 
 
-Editor.prototype.resetTile = function(m, old_tile, opts) {
-    var new_tile = m.add(old_tile, opts);
-    old_tile.$elem.css(m.css(new_tile));
+Editor.prototype.resetTile = function(layout, old_tile, opts) {
+    var new_tile = layout.add(old_tile, opts);
+    old_tile.$elem.css(layout.css(new_tile));
     old_tile.row = new_tile.row;
     old_tile.col = new_tile.col;
 }
@@ -76,44 +76,53 @@ Editor.prototype.resetTiles = function() {
 
 Editor.prototype.onKeydown = function(e) {
 
-    switch (e.keyCode) {
+    console.log(e);
 
-        case 82: // r
-            for (var i = 0; i < all_tiles.length; i++) {
-                all_tiles[i].locked = null
-                all_tiles[i].$tile.removeClass('tile-locked')
-                all_tiles[i].$tile.removeClass('tile-selected')
+    switch (e.which) {
+
+        case 114: // r
+            for (var i = 0; i < this.tiles.length; i++) {
+                this.tiles[i].locked = null
+                this.tiles[i].$elem.removeClass('tile-locked')
+                this.tiles[i].$elem.removeClass('tile-selected')
             }
-            resetTiles();
+            this.resetTiles();
             break;
 
         case 38: // up
         case 40: // down
             e.preventDefault()
-            for (var i = 0; i < selection.length; i++) {
+            for (var i = 0; i < this.selection.length; i++) {
                 if (e.metaKey) {
-                    selection[i].locked.height += e.keyCode == 40 ? 1 : -1;
+                    this.selection[i].locked.height += e.which == 40 ? 1 : -1;
+                    if (this.opts.resized) {
+                        this.opts.resized(this.selection[i].locked, this);
+                    }
                 } else {
-                    selection[i].locked.row += e.keyCode == 40 ? 1 : -1;
+                    this.selection[i].locked.row += e.which == 40 ? 1 : -1;
                 }
             }
-            resetTiles();
+            this.resetTiles();
             break;
 
         case 37: // left
         case 39: // right
             e.preventDefault()
-            for (var i = 0; i < selection.length; i++) {
+            for (var i = 0; i < this.selection.length; i++) {
                 if (e.metaKey) {
-                    selection[i].locked.width += e.keyCode == 39 ? 1 : -1;
+                    this.selection[i].locked.width += e.which == 39 ? 1 : -1;
+                    if (this.opts.resized) {
+                        this.opts.resized(this.selection[i].locked, this);
+                    }
                 } else {
-                    selection[i].locked.col += e.keyCode == 39 ? 1 : -1;
-                }            }
-            resetTiles();
+                    this.selection[i].locked.col += e.which == 39 ? 1 : -1;
+                }
+            }
+            this.resetTiles();
             break;
 
         default:
-            console.log('unknown key', e.keyCode, e)
+            console.log('unknown key', e.which, e)
     }
 
 }
@@ -131,7 +140,7 @@ Editor.prototype.onMousedown = function(e) {
 
     $tile.addClass('tile-locked');
     $tile.addClass('tile-selected');
-    tile.locked = clone(tile)
+    tile.locked = clone(tile.locked || tile)
 
     $(window).on('mouseup.backsplash', $.proxy(this, 'onMouseup'));
     $(window).on('mousemove.backsplash', $.proxy(this, 'onMousemove'));
