@@ -33,153 +33,10 @@
     </style>
 
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script src="mosaic.js"></script>
+    <script src="backsplash.js"></script>
+    <script src="backsplashEditor.js"></script>
+
     <script>jQuery(function ($) {
-
-
-var flat = function(x) {
-    JSON.parse(JSON.stringify(x));
-}
-
-
-var selection = []
-
-
-var resetTile = function(m, old_tile, opts) {
-    var new_tile = m.add(old_tile, opts);
-    old_tile.$tile.css(m.css(new_tile));
-    old_tile.row = new_tile.row;
-    old_tile.col = new_tile.col;
-}
-
-
-var resetTiles = function() {
-
-    var N = new Mosaic(M.opts);
-
-    for (var i = 0; i < all_tiles.length; i++) {
-        if (all_tiles[i].locked) {
-            resetTile(N, all_tiles[i].locked)
-        }
-    }
-    for (var i = 0; i < all_tiles.length; i++) {
-        if (!all_tiles[i].locked) {
-            resetTile(N, all_tiles[i], {ignore_position: true})
-        }
-    }
-
-    return N;
-
-}
-
-
-$(document).on('keydown', function(e) {
-
-    switch (e.keyCode) {
-
-        case 82: // r
-            for (var i = 0; i < all_tiles.length; i++) {
-                all_tiles[i].locked = null
-                all_tiles[i].$tile.removeClass('tile-locked')
-                all_tiles[i].$tile.removeClass('tile-selected')
-            }
-            resetTiles();
-            break;
-
-        case 38: // up
-        case 40: // down
-            e.preventDefault()
-            for (var i = 0; i < selection.length; i++) {
-                if (e.metaKey) {
-                    selection[i].locked.height += e.keyCode == 40 ? 1 : -1;
-                } else {
-                    selection[i].locked.row += e.keyCode == 40 ? 1 : -1;
-                }
-            }
-            resetTiles();
-            break;
-
-        case 37: // left
-        case 39: // right
-            e.preventDefault()
-            for (var i = 0; i < selection.length; i++) {
-                if (e.metaKey) {
-                    selection[i].locked.width += e.keyCode == 39 ? 1 : -1;
-                } else {
-                    selection[i].locked.col += e.keyCode == 39 ? 1 : -1;
-                }            }
-            resetTiles();
-            break;
-
-        default:
-            console.log('unknown key', e.keyCode, e)
-    }
-
-})
-
-
-var mousedown;
-
-$(document).on('mousedown', '.tile', function(e) {
-
-    e.preventDefault();
-    mousedown = e;
-
-    var $tile = $(this);
-    var tile = $tile.data('mosaic_tile');
-
-    $tile.addClass('tile-locked');
-    $tile.addClass('tile-selected');
-    tile.locked = clone(tile)
-
-    $(window).on('mouseup', mouseUp);
-    $(window).on('mousemove', mouseMove);
-
-    if (!e.shiftKey) {
-        for (var i = 0; i < selection.length; i++) {
-            selection[i].$tile.removeClass('tile-selected');
-        }
-        selection = []
-    }
-    selection.push(tile);
-
-    resetTiles();
-
-})
-
-
-var mouseMove = function(e) {
-
-    e.preventDefault();
-    console.log(e)
-
-    var origin = $('#container').offset();
-    var x = e.pageX - origin.left - mousedown.offsetX;
-    var y = e.pageY - origin.top - mousedown.offsetY;
-
-    var row = Math.floor(y / (M.tile_size + M.padding) + 0.5);
-    var col = Math.floor(x / (M.tile_size + M.padding) + 0.5);
-
-    var tile = selection[0];
-    var changed = (tile.locked.row != row || tile.locked.col != col);
-    tile.locked.row = row;
-    tile.locked.col = col;
-
-    if (changed) {
-        resetTiles();
-    }
-
-    selection[0].$tile.css({left: x, top: y});
-
-}
-
-
-var mouseUp = function(e) {
-    e.preventDefault();
-    $(window).off('mouseup', mouseUp);
-    $(window).off('mousemove', mouseMove);
-    resetTiles();
-}
 
 
 
@@ -194,33 +51,30 @@ function getRandomColor() {
 }
 
 
-var all_tiles = [];
 
-var M = new Mosaic({
+var layout = new backsplash.Layout({
     width: 5,
     tile_size: 100,
     padding: 2
 });
 
-
 for (i = 0; i < 100; i++) {
     var width = 1 + Math.floor(Math.random() * 2);
     var height = 1 + Math.floor(Math.random() * 2);
 
-    var tile = M.add({width: width, height: height});
-    all_tiles.push(tile);
+    var tile = layout.add({width: width, height: height});
 
     var $tile = $('<div class="tile" />')
-        .data('mosaic_tile', tile)
+        .data('tile', tile)
         .text(i + ": " + width + "x" + height)
-        .css(M.css(tile))
+        .css(layout.css(tile))
         .css('backgroundColor', getRandomColor())
         .appendTo('#container')
 
-    tile.$tile = $tile;
-
-
 }
+
+$('#container').backsplashEditor(layout.opts);
+
 
 
     })</script>

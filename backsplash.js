@@ -158,6 +158,7 @@ Layout.prototype.occupy = function(tile) {
 
 
 return {
+    _clone: clone,
     Layout: Layout
 }
 
