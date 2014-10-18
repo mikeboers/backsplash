@@ -196,6 +196,8 @@ Editor.prototype.onKeydown = function(e) {
                     tile.$elem.trigger('resized', [tile, this])
                 } else {
                     tile.row += e.which == 40 ? 1 : -1;
+                    tile.pinned = true;
+                    this.updateButtons(tile);
                     tile.$elem.trigger('moved', [tile])
                 }
             }
@@ -212,6 +214,8 @@ Editor.prototype.onKeydown = function(e) {
                     tile.$elem.trigger('resized', [tile, this])
                 } else {
                     tile.col += e.which == 39 ? 1 : -1;
+                    tile.pinned = true;
+                    this.updateButtons(tile);
                     tile.$elem.trigger('moved', [tile])
                 }
             }
@@ -237,7 +241,6 @@ Editor.prototype.onMousedown = function(e) {
     this.mousedownCol = tile.col;
 
     tile.backup = clone(tile.backup || tile)
-    tile.pinned = true;
 
     $(window).on('mouseup.backsplash', $.proxy(this, 'onMouseup'));
     $(window).on('mousemove.backsplash', $.proxy(this, 'onMousemove'));
@@ -293,6 +296,8 @@ Editor.prototype.onMouseup = function(e) {
     $(window).off('mousemove.backsplash');
 
     if (this.mousedownRow != this.mousedownTile.row || this.mousedownCol != this.mousedownTile.col) {
+        tile.pinned = true;
+        this.updateButtons(tile);
         this.mousedownTile.$elem.trigger('moved', [this.mousedownTile]);
     }
 
