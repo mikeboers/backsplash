@@ -134,12 +134,12 @@ Editor.prototype.resetTiles = function() {
 
     for (var i = 0; i < this.tiles.length; i++) {
         this.tiles[i]._first = !i
-        if (this.tiles[i].pinned || this.tiles[i].locked) {
+        if (this.tiles[i].dragging || this.tiles[i].pinned || this.tiles[i].locked) {
             this.resetTile(layout, this.tiles[i])
         }
     }
     for (var i = 0; i < this.tiles.length; i++) {
-        if (!(this.tiles[i].pinned || this.tiles[i].locked)) {
+        if (!(this.tiles[i].dragging || this.tiles[i].pinned || this.tiles[i].locked)) {
             this.resetTile(layout, this.tiles[i], {ignore_position: true})
         }
     }
@@ -241,6 +241,7 @@ Editor.prototype.onMousedown = function(e) {
     this.mousedownCol = tile.col;
 
     tile.backup = clone(tile.backup || tile)
+    tile.dragging = true;
 
     $(window).on('mouseup.backsplash', $.proxy(this, 'onMouseup'));
     $(window).on('mousemove.backsplash', $.proxy(this, 'onMousemove'));
@@ -296,10 +297,12 @@ Editor.prototype.onMouseup = function(e) {
     $(window).off('mousemove.backsplash');
 
     if (this.mousedownRow != this.mousedownTile.row || this.mousedownCol != this.mousedownTile.col) {
-        tile.pinned = true;
-        this.updateButtons(tile);
         this.mousedownTile.$elem.trigger('moved', [this.mousedownTile]);
+        this.mousedownTile.pinned = true;
+        this.updateButtons(this.mousedownTile);
     }
+
+    this.mousedownTile.dragging = false;
 
     this.resetTiles();
 
