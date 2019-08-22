@@ -46,8 +46,8 @@ class Layout(object):
 
     def linearize(self):
         seen = set()
-        for r in xrange(len(self._holes)):
-            for c in xrange(self._width):
+        for r in range(len(self._holes)):
+            for c in range(self._width):
                 t = self._tiles.get((r, c))
                 if not t:
                     continue
@@ -56,8 +56,8 @@ class Layout(object):
                     seen.add(t)
 
     def _find_hole(self, tile):
-        for r in xrange(len(self._holes)):
-            for c in xrange(self._width):
+        for r in range(len(self._holes)):
+            for c in range(self._width):
                 if self._holes[r] and self._holes[r][c]:
                     if self._fits_holes(tile, r, c):
                         tile.row = r
@@ -68,8 +68,8 @@ class Layout(object):
         return tile
 
     def _fits_holes(self, tile, r, c):
-        for R in xrange(r, r + tile.height):
-            for C in xrange(c, c + tile.width):
+        for R in range(r, r + tile.height):
+            for C in range(c, c + tile.width):
                 if C >= self._width:
                     return False
                 if R < len(self._holes) and (not self._holes[R] or not self._holes[R][C]):
@@ -79,8 +79,8 @@ class Layout(object):
     def _occupy(self, tile):
         while len(self._holes) < tile.row + tile.height:
             self._holes.append([True] * self._width)
-        for r in xrange(tile.row, tile.row + tile.height):
-            for c in xrange(tile.col, tile.col + tile.width):
+        for r in range(tile.row, tile.row + tile.height):
+            for c in range(tile.col, tile.col + tile.width):
                 self._holes[r][c] = False
                 self._tiles[(r,c)] = tile
             if not any(self._holes[r]):

@@ -19,9 +19,9 @@ def format_labels_py(width, tiles):
     lines.append('order: ' + ''.join(t.label for t in m.linearize()))
     lines.append('')
 
-    for r in xrange(len(m._holes)):
+    for r in range(len(m._holes)):
         labels = []
-        for c in xrange(m._width):
+        for c in range(m._width):
             t = m._tiles.get((r, c))
             labels.append(t.label if t else ' ')
         lines.append(''.join(labels))
@@ -117,10 +117,10 @@ class TestLayout(TestCase):
         ''')
 
     def test_random_layouts(self):
-        for width in xrange(5, 11):
-            for max_size in xrange(2, width + 1):
+        for width in range(5, 11):
+            for max_size in range(2, width + 1):
                 tiles = []
-                for _ in xrange(random.randrange(width, width * 2)):
+                for _ in range(random.randrange(width, width * 2)):
                     tiles.append(Tile(
                         random.randrange(1, max_size + 1),
                         random.randrange(1, max_size + 1),
